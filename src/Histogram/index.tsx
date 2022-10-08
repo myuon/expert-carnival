@@ -10,12 +10,9 @@ export const Histogram = ({
   onChangeToneCurve?: (points: number[]) => void;
 }) => {
   const [dragElement, setDragElement] = useState<SVGCircleElement | null>(null);
-  const [points, setPoints] = useState<{ x: number; y: number }[]>([
-    { x: 0, y: 0 },
-    { x: 0.25, y: 0.25 },
-    { x: 0.5, y: 0.5 },
-    { x: 0.75, y: 0.75 },
-    { x: 1, y: 1 },
+  const [points, setPoints] = useState<{ id: string; x: number; y: number }[]>([
+    { id: "1", x: 0, y: 0 },
+    { id: "2", x: 1, y: 1 },
   ]);
   const toneCurvePoints = useMemo(() => {
     const newPoints = curve(points);
@@ -43,7 +40,9 @@ export const Histogram = ({
           dragElement.setAttribute("cx", `${dragX}`);
           dragElement.setAttribute("cy", `${dragY}`);
 
-          const index = dragElement.dataset.pointIndex;
+          const index = points.findIndex(
+            (p) => p.id === dragElement.dataset.id
+          );
           if (index) {
             points[Number(index)].x = dragX / 256;
             points[Number(index)].y = 1.0 - dragY / 256;
@@ -98,71 +97,55 @@ export const Histogram = ({
         fill="none"
         stroke="#1e293b"
         strokeWidth={1}
+        onClick={(event) => {
+          event.preventDefault();
+          const ctm = event.currentTarget.getScreenCTM();
+          if (!ctm) {
+            return;
+          }
+
+          const dragX = (event.clientX - ctm.e) / ctm.a;
+          const dragY = (event.clientY - ctm.f) / ctm.d;
+          console.log(dragX, dragY);
+
+          const newPoints = [
+            ...points,
+            {
+              id: `${new Date().getTime()}`,
+              x: dragX / 256,
+              y: 1.0 - dragY / 256,
+            },
+          ];
+          newPoints.sort((a, b) => a.x - b.x);
+          setPoints(newPoints);
+        }}
       />
       {/* handle */}
-      <circle
-        cx={128}
-        cy={128}
-        r={4}
-        fill="#cbd5e1"
-        stroke="#1e293b"
-        strokeWidth={1}
-        css={css`
-          cursor: move;
-        `}
-        onMouseDown={(event) => {
-          setDragElement(event.currentTarget);
-        }}
-        data-point-index={2}
-      />
-      <circle
-        cx={64}
-        cy={192}
-        r={4}
-        fill="#cbd5e1"
-        stroke="#1e293b"
-        strokeWidth={1}
-        css={css`
-          cursor: move;
-        `}
-        onMouseDown={(event) => {
-          setDragElement(event.currentTarget);
-        }}
-        data-point-index={1}
-      />
-      <circle
-        cx={192}
-        cy={64}
-        r={4}
-        fill="#cbd5e1"
-        stroke="#1e293b"
-        strokeWidth={1}
-        css={css`
-          cursor: move;
-        `}
-        onMouseDown={(event) => {
-          setDragElement(event.currentTarget);
-        }}
-        data-point-index={3}
-      />
-      <circle
-        cx={0}
-        cy={256}
-        r={4}
-        fill="#cbd5e1"
-        stroke="#1e293b"
-        strokeWidth={1}
-        data-point-index={0}
-      />
-      <circle
-        cx={256}
-        cy={0}
-        r={4}
-        fill="#cbd5e1"
-        stroke="#1e293b"
-        strokeWidth={1}
-        data-point-index={4}
-      />
+      {points.map((point) => (
+        <circle
+          key={point.id}
+          cx={point.x * 256}
+          cy={(1.0 - point.y) * 256}
+          r={4}
+          fill="#cbd5e1"
+          stroke="#1e293b"
+          strokeWidth={1}
+          css={css`
+            cursor: move;
+          `}
+          onMouseDown={(event) => {
+            setDragElement(event.currentTarget);
+          }}
+          onDoubleClick={() => {
+            const index = points.findIndex((p) => p.id === point.id);
+            if (index) {
+              points.splice(Number(index), 1);
+              setPoints([...points]);
+            }
+          }}
+          data-id={point.id}
+        />
+      ))}
     </svg>
   );
 };
