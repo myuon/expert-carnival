@@ -5,22 +5,30 @@ import { css } from "@emotion/react";
 import { Histogram } from "./Histogram";
 import { convertImage } from "./helper/image";
 
-export const App = () => {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const [histogram, setHistogram] = useState<number[]>();
+const useFetchImage = (url: string) => {
   const [image, setImage] = useState<Image>();
-  const [originalImage, setOriginalImage] = useState<Image>();
-
   useEffect(() => {
     (async () => {
-      const image = await Image.load(
-        "https://picsum.photos/seed/picsum/800/550"
-      );
-      setOriginalImage(image);
+      const image = await Image.load(url);
       setImage(image);
-      setHistogram(image.getHistogram({ channel: 0 }));
     })();
-  }, []);
+  }, [url]);
+
+  return { image, histogram: image?.getHistogram({ channel: 0 }) };
+};
+
+export const App = () => {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [image, setImage] = useState<Image>();
+  const { image: originalImage, histogram } = useFetchImage(
+    "https://picsum.photos/seed/picsum/800/550"
+  );
+
+  useEffect(() => {
+    if (originalImage) {
+      setImage(originalImage);
+    }
+  }, [originalImage]);
 
   useEffect(() => {
     if (image) {
@@ -48,13 +56,15 @@ export const App = () => {
         <Histogram
           values={histogram}
           onChangeToneCurve={(points) => {
-            const newImage = image
-              ? convertImage(
-                  originalImage!,
-                  (v) => points[Math.floor((v * 100) / 256)] * 256
-                )
-              : undefined;
-            setImage(newImage);
+            if (originalImage) {
+              const newImage = image
+                ? convertImage(
+                    originalImage,
+                    (v) => points[Math.floor((v * 100) / 256)] * 256
+                  )
+                : undefined;
+              setImage(newImage);
+            }
           }}
         />
       </div>
