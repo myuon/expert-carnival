@@ -2,9 +2,7 @@ import "./App.css";
 import { Image } from "image-js";
 import { useEffect, useRef, useState } from "react";
 import { css } from "@emotion/react";
-import { curve } from "./helper/curve";
 import { Histogram } from "./Histogram";
-import { Graph } from "./Graph";
 
 export const App = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -44,15 +42,6 @@ export const App = () => {
           `}
         />
         <Histogram values={histogram} />
-        <Graph
-          values={curve([
-            { x: 0, y: 0 },
-            { x: 0.25, y: 0.125 },
-            { x: 0.5, y: 0.5 },
-            { x: 0.75, y: 0.875 },
-            { x: 1, y: 1 },
-          ])}
-        />
       </div>
     </div>
   );

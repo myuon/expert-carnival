@@ -1,8 +1,16 @@
 import { css } from "@emotion/react";
 import { useState } from "react";
+import { curve } from "../helper/curve";
 
 export const Histogram = ({ values }: { values?: number[] }) => {
   const [dragElement, setDragElement] = useState<SVGCircleElement | null>(null);
+  const [points, setPoints] = useState<{ x: number; y: number }[]>([
+    { x: 0, y: 0 },
+    { x: 0.25, y: 0.25 },
+    { x: 0.5, y: 0.5 },
+    { x: 0.75, y: 0.75 },
+    { x: 1, y: 1 },
+  ]);
 
   return (
     <svg
@@ -22,6 +30,12 @@ export const Histogram = ({ values }: { values?: number[] }) => {
 
           // dragElement.setAttribute("cx", `${dragX}`);
           dragElement.setAttribute("cy", `${dragY}`);
+
+          const index = dragElement.dataset.pointIndex;
+          if (index) {
+            points[Number(index)].y = 1.0 - dragY / 256;
+            setPoints([...points]);
+          }
         }
       }}
       onMouseUp={() => {
@@ -60,8 +74,18 @@ export const Histogram = ({ values }: { values?: number[] }) => {
           strokeWidth={1}
         />
       )}
-      {/* line */}
-      <path d="M0,256 L256,0" fill="none" stroke="#1e293b" strokeWidth={1} />
+      {/* curve */}
+      <path
+        d={[
+          "M0,256",
+          ...curve(points).map(
+            (t, i) => `L${(i * 256) / 100},${256 - t * 256}`
+          ),
+        ].join(" ")}
+        fill="none"
+        stroke="#1e293b"
+        strokeWidth={1}
+      />
       {/* handle */}
       <circle
         cx={128}
@@ -76,6 +100,7 @@ export const Histogram = ({ values }: { values?: number[] }) => {
         onMouseDown={(event) => {
           setDragElement(event.currentTarget);
         }}
+        data-point-index={2}
       />
       <circle
         cx={64}
@@ -90,6 +115,7 @@ export const Histogram = ({ values }: { values?: number[] }) => {
         onMouseDown={(event) => {
           setDragElement(event.currentTarget);
         }}
+        data-point-index={1}
       />
       <circle
         cx={192}
@@ -104,6 +130,7 @@ export const Histogram = ({ values }: { values?: number[] }) => {
         onMouseDown={(event) => {
           setDragElement(event.currentTarget);
         }}
+        data-point-index={3}
       />
       <circle
         cx={0}
@@ -112,6 +139,7 @@ export const Histogram = ({ values }: { values?: number[] }) => {
         fill="#cbd5e1"
         stroke="#1e293b"
         strokeWidth={1}
+        data-point-index={0}
       />
       <circle
         cx={256}
@@ -120,6 +148,7 @@ export const Histogram = ({ values }: { values?: number[] }) => {
         fill="#cbd5e1"
         stroke="#1e293b"
         strokeWidth={1}
+        data-point-index={4}
       />
     </svg>
   );
