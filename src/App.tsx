@@ -3,25 +3,28 @@ import { Image } from "image-js";
 import { useEffect, useRef, useState } from "react";
 import { css } from "@emotion/react";
 import { Histogram } from "./Histogram";
+import { convertImage } from "./helper/image";
 
 export const App = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [histogram, setHistogram] = useState<number[]>();
   const [image, setImage] = useState<Image>();
+  const [originalImage, setOriginalImage] = useState<Image>();
 
   useEffect(() => {
     (async () => {
-      setImage(await Image.load("https://picsum.photos/seed/picsum/800/550"));
+      const image = await Image.load(
+        "https://picsum.photos/seed/picsum/800/550"
+      );
+      setOriginalImage(image);
+      setImage(image);
+      setHistogram(image.getHistogram({ channel: 0 }));
     })();
   }, []);
 
   useEffect(() => {
-    if (canvasRef.current && image) {
-      canvasRef.current?.replaceWith(image.getCanvas());
-    }
-
     if (image) {
-      setHistogram(image.getHistogram({ channel: 0 }));
+      canvasRef.current?.getContext("2d")?.drawImage(image.getCanvas(), 0, 0);
     }
   }, [image]);
 
@@ -45,7 +48,13 @@ export const App = () => {
         <Histogram
           values={histogram}
           onChangeToneCurve={(points) => {
-            console.log(points);
+            const newImage = image
+              ? convertImage(
+                  originalImage!,
+                  (v) => points[Math.floor((v * 100) / 256)] * 256
+                )
+              : undefined;
+            setImage(newImage);
           }}
         />
       </div>

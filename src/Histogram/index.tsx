@@ -1,5 +1,5 @@
 import { css } from "@emotion/react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { curve } from "../helper/curve";
 
 export const Histogram = ({
@@ -17,10 +17,12 @@ export const Histogram = ({
     { x: 0.75, y: 0.75 },
     { x: 1, y: 1 },
   ]);
-  const toneCurvePoints = useMemo(() => curve(points), [points]);
-  useEffect(() => {
-    onChangeToneCurve?.(toneCurvePoints);
-  }, [onChangeToneCurve, toneCurvePoints]);
+  const toneCurvePoints = useMemo(() => {
+    const newPoints = curve(points);
+    onChangeToneCurve?.(newPoints);
+
+    return newPoints;
+  }, [points]);
 
   return (
     <svg
