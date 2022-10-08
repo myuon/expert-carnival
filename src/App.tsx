@@ -4,8 +4,37 @@ import { useEffect, useRef, useState } from "react";
 import { css } from "@emotion/react";
 
 const Histogram = ({ values }: { values?: number[] }) => {
+  const [dragElement, setDragElement] = useState<SVGCircleElement | null>(null);
+
   return (
-    <svg width={256} height={256}>
+    <svg
+      width={256}
+      height={256}
+      onMouseMove={(event) => {
+        // dragging
+        if (dragElement) {
+          event.preventDefault();
+          const ctm = dragElement.getScreenCTM();
+          if (!ctm) {
+            return;
+          }
+
+          // const dragX = (event.clientX - ctm.e) / ctm.a;
+          const dragY = (event.clientY - ctm.f) / ctm.d;
+
+          // dragElement.setAttribute("cx", `${dragX}`);
+          dragElement.setAttribute("cy", `${dragY}`);
+        }
+      }}
+      onMouseUp={() => {
+        // stop dragging
+        setDragElement(null);
+      }}
+      onMouseLeave={() => {
+        // stop dragging
+        setDragElement(null);
+      }}
+    >
       <path
         d="M0,0 L0,256 L256,256 L256,0 L0,0"
         fill="none"
@@ -44,8 +73,11 @@ const Histogram = ({ values }: { values?: number[] }) => {
         stroke="#1e293b"
         strokeWidth={1}
         css={css`
-          cursor: pointer;
+          cursor: move;
         `}
+        onMouseDown={(event) => {
+          setDragElement(event.currentTarget);
+        }}
       />
       <circle
         cx={64}
@@ -54,6 +86,12 @@ const Histogram = ({ values }: { values?: number[] }) => {
         fill="#cbd5e1"
         stroke="#1e293b"
         strokeWidth={1}
+        css={css`
+          cursor: move;
+        `}
+        onMouseDown={(event) => {
+          setDragElement(event.currentTarget);
+        }}
       />
       <circle
         cx={192}
@@ -62,6 +100,12 @@ const Histogram = ({ values }: { values?: number[] }) => {
         fill="#cbd5e1"
         stroke="#1e293b"
         strokeWidth={1}
+        css={css`
+          cursor: move;
+        `}
+        onMouseDown={(event) => {
+          setDragElement(event.currentTarget);
+        }}
       />
       <circle
         cx={0}
