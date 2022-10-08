@@ -87,6 +87,7 @@ export const Histogram = ({
         />
       )}
       {/* curve */}
+      {/* 以下のcurveのpathのクリック領域を拡張するための別のpath */}
       <path
         d={[
           "M0,256",
@@ -95,8 +96,11 @@ export const Histogram = ({
           ),
         ].join(" ")}
         fill="none"
-        stroke="#1e293b"
-        strokeWidth={1}
+        stroke="rgba(0,0,0,0.0)"
+        strokeWidth={30}
+        css={css`
+          cursor: pointer;
+        `}
         onClick={(event) => {
           event.preventDefault();
           const ctm = event.currentTarget.getScreenCTM();
@@ -106,7 +110,6 @@ export const Histogram = ({
 
           const dragX = (event.clientX - ctm.e) / ctm.a;
           const dragY = (event.clientY - ctm.f) / ctm.d;
-          console.log(dragX, dragY);
 
           const newPoints = [
             ...points,
@@ -119,6 +122,17 @@ export const Histogram = ({
           newPoints.sort((a, b) => a.x - b.x);
           setPoints(newPoints);
         }}
+      />
+      <path
+        d={[
+          "M0,256",
+          ...toneCurvePoints.map(
+            (t, i) => `L${(i * 256) / 100},${256 - t * 256}`
+          ),
+        ].join(" ")}
+        fill="none"
+        stroke="#1e293b"
+        strokeWidth={1}
       />
       {/* handle */}
       {points.map((point) => (
