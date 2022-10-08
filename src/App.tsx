@@ -6,23 +6,24 @@ import { Histogram } from "./Histogram";
 
 export const App = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const [canvas, setCanvas] = useState<HTMLCanvasElement>();
   const [histogram, setHistogram] = useState<number[]>();
+  const [image, setImage] = useState<Image>();
 
   useEffect(() => {
     (async () => {
-      const image = await Image.load(
-        "https://picsum.photos/seed/picsum/800/550"
-      );
-
-      setCanvas(image.getCanvas());
-      setHistogram(image.getHistogram({ channel: 0 }));
+      setImage(await Image.load("https://picsum.photos/seed/picsum/800/550"));
     })();
   }, []);
 
-  if (canvasRef.current && canvas) {
-    canvasRef.current?.replaceWith(canvas);
-  }
+  useEffect(() => {
+    if (canvasRef.current && image) {
+      canvasRef.current?.replaceWith(image.getCanvas());
+    }
+
+    if (image) {
+      setHistogram(image.getHistogram({ channel: 0 }));
+    }
+  }, [image]);
 
   return (
     <div className="App">
@@ -41,7 +42,12 @@ export const App = () => {
             background-color: black;
           `}
         />
-        <Histogram values={histogram} />
+        <Histogram
+          values={histogram}
+          onChangeToneCurve={(points) => {
+            console.log(points);
+          }}
+        />
       </div>
     </div>
   );

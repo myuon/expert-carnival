@@ -1,8 +1,14 @@
 import { css } from "@emotion/react";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { curve } from "../helper/curve";
 
-export const Histogram = ({ values }: { values?: number[] }) => {
+export const Histogram = ({
+  values,
+  onChangeToneCurve,
+}: {
+  values?: number[];
+  onChangeToneCurve?: (points: number[]) => void;
+}) => {
   const [dragElement, setDragElement] = useState<SVGCircleElement | null>(null);
   const [points, setPoints] = useState<{ x: number; y: number }[]>([
     { x: 0, y: 0 },
@@ -11,6 +17,10 @@ export const Histogram = ({ values }: { values?: number[] }) => {
     { x: 0.75, y: 0.75 },
     { x: 1, y: 1 },
   ]);
+  const toneCurvePoints = useMemo(() => curve(points), [points]);
+  useEffect(() => {
+    onChangeToneCurve?.(toneCurvePoints);
+  }, [onChangeToneCurve, toneCurvePoints]);
 
   return (
     <svg
@@ -78,7 +88,7 @@ export const Histogram = ({ values }: { values?: number[] }) => {
       <path
         d={[
           "M0,256",
-          ...curve(points).map(
+          ...toneCurvePoints.map(
             (t, i) => `L${(i * 256) / 100},${256 - t * 256}`
           ),
         ].join(" ")}
