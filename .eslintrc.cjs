@@ -1,4 +1,5 @@
 module.exports = {
+  root: true,
   env: {
     browser: true,
     es2021: true,
@@ -10,10 +11,12 @@ module.exports = {
     "plugin:react-hooks/recommended",
     "plugin:@typescript-eslint/recommended",
     "plugin:jsx-a11y/recommended",
+    "plugin:react/jsx-runtime",
     "prettier",
   ],
   parser: "@typescript-eslint/parser",
   parserOptions: {
+    project: ["./tsconfig.json"],
     ecmaFeatures: {
       jsx: true,
     },
@@ -30,6 +33,9 @@ module.exports = {
     // for emotion
     // cf: https://github.com/jsx-eslint/eslint-plugin-react/blob/master/docs/rules/no-unknown-property.md#rule-options
     "react/no-unknown-property": ["error", { ignore: ["css"] }],
+    "@typescript-eslint/strict-boolean-expressions": [
+      "error",
+      { allowNumber: false },
+    ],
   },
-  ignorePatterns: [".eslintrc.js"],
 };

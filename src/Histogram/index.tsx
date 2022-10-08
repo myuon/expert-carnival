@@ -45,7 +45,7 @@ export const Histogram = ({
             (p) => p.id === dragElement.dataset.id
           );
 
-          if (index !== undefined) {
+          if (index != undefined) {
             const point = points[index];
             // Lock x for start and end
             if (point.id !== "start" && point.id !== "end") {
@@ -162,7 +162,7 @@ export const Histogram = ({
           }}
           onDoubleClick={() => {
             const index = points.findIndex((p) => p.id === point.id);
-            if (index) {
+            if (index !== -1) {
               points.splice(Number(index), 1);
               setPoints([...points]);
             }
