@@ -1,5 +1,6 @@
 import { css } from "@emotion/react";
 import { useMemo, useState } from "react";
+import { clamp } from "../helper/clamp";
 import { curve } from "../helper/curve";
 
 export const Histogram = ({
@@ -25,6 +26,9 @@ export const Histogram = ({
     <svg
       width={256}
       height={256}
+      css={css`
+        overflow: visible;
+      `}
       onMouseMove={(event) => {
         // dragging
         if (dragElement) {
@@ -34,8 +38,8 @@ export const Histogram = ({
             return;
           }
 
-          const dragX = (event.clientX - ctm.e) / ctm.a;
-          const dragY = (event.clientY - ctm.f) / ctm.d;
+          const dragX = clamp((event.clientX - ctm.e) / ctm.a, 0, 256);
+          const dragY = clamp((event.clientY - ctm.f) / ctm.d, 0, 256);
 
           const index = points.findIndex(
             (p) => p.id === dragElement.dataset.id
@@ -96,7 +100,7 @@ export const Histogram = ({
       {/* 以下のcurveのpathのクリック領域を拡張するための別のpath */}
       <path
         d={[
-          "M0,256",
+          `M0,${256 - toneCurvePoints[0] * 256}`,
           ...toneCurvePoints.map(
             (t, i) => `L${(i * 256) / 100},${256 - t * 256}`
           ),
@@ -131,7 +135,7 @@ export const Histogram = ({
       />
       <path
         d={[
-          "M0,256",
+          `M0,${256 - toneCurvePoints[0] * 256}`,
           ...toneCurvePoints.map(
             (t, i) => `L${(i * 256) / 100},${256 - t * 256}`
           ),
