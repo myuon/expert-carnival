@@ -11,8 +11,8 @@ export const Histogram = ({
 }) => {
   const [dragElement, setDragElement] = useState<SVGCircleElement | null>(null);
   const [points, setPoints] = useState<{ id: string; x: number; y: number }[]>([
-    { id: "1", x: 0, y: 0 },
-    { id: "2", x: 1, y: 1 },
+    { id: "start", x: 0, y: 0 },
+    { id: "end", x: 1, y: 1 },
   ]);
   const toneCurvePoints = useMemo(() => {
     const newPoints = curve(points);
@@ -37,15 +37,21 @@ export const Histogram = ({
           const dragX = (event.clientX - ctm.e) / ctm.a;
           const dragY = (event.clientY - ctm.f) / ctm.d;
 
-          dragElement.setAttribute("cx", `${dragX}`);
-          dragElement.setAttribute("cy", `${dragY}`);
-
           const index = points.findIndex(
             (p) => p.id === dragElement.dataset.id
           );
-          if (index) {
-            points[Number(index)].x = dragX / 256;
+
+          if (index !== undefined) {
+            const point = points[index];
+            // Lock x for start and end
+            if (point.id !== "start" && point.id !== "end") {
+              points[Number(index)].x = dragX / 256;
+              dragElement.setAttribute("cx", `${dragX}`);
+            }
+
             points[Number(index)].y = 1.0 - dragY / 256;
+            dragElement.setAttribute("cy", `${dragY}`);
+
             setPoints([...points]);
           }
         }
