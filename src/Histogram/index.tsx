@@ -37,14 +37,15 @@ export const Histogram = ({
             return;
           }
 
-          // const dragX = (event.clientX - ctm.e) / ctm.a;
+          const dragX = (event.clientX - ctm.e) / ctm.a;
           const dragY = (event.clientY - ctm.f) / ctm.d;
 
-          // dragElement.setAttribute("cx", `${dragX}`);
+          dragElement.setAttribute("cx", `${dragX}`);
           dragElement.setAttribute("cy", `${dragY}`);
 
           const index = dragElement.dataset.pointIndex;
           if (index) {
+            points[Number(index)].x = dragX / 256;
             points[Number(index)].y = 1.0 - dragY / 256;
             setPoints([...points]);
           }
