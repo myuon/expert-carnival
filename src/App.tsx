@@ -1,6 +1,6 @@
 import "./App.css";
 import { Image } from "image-js";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { css } from "@emotion/react";
 import { Histogram } from "./Histogram";
 import { convertImage } from "./helper/image";
@@ -26,46 +26,51 @@ export const App = () => {
   const [toneCurve, setToneCurve] = useState<number[]>([]);
   const [rotation, setRotation] = useState(0);
 
+  const [, startTransition] = useTransition();
   const update = useCallback(() => {
-    if (!originalImage) {
-      return;
-    }
-
-    let image = originalImage.clone();
-    image = convertImage(
-      originalImage,
-      (v) => toneCurve[Math.floor((v * 100) / 256)] * 256
-    );
-
-    if (rotation !== 0) {
-      image = image.rotate(rotation);
-
-      // 画面からはみ出さないように適当にリザイズする(レタッチとしては誤り)
-      if ((image.height * image.width) / 800 > 550) {
-        image = image.resize({
-          width: (image.width * 550) / image.height,
-          height: 550,
-          preserveAspectRatio: true,
-        });
-      } else {
-        image = image.resize({
-          width: 800,
-          height: (image.height * 800) / image.width,
-          preserveAspectRatio: false,
-        });
+    startTransition(() => {
+      if (!originalImage) {
+        return;
       }
-    }
 
-    canvasRef.current
-      ?.getContext("2d")
-      ?.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-    canvasRef.current
-      ?.getContext("2d")
-      ?.drawImage(
-        image.getCanvas(),
-        (800 - image.width) / 2,
-        (550 - image.height) / 2
+      let image = originalImage.clone();
+      image = convertImage(
+        originalImage,
+        (v) => toneCurve[Math.floor((v * 100) / 256)] * 256
       );
+
+      // rotateは重い処理なので毎回走らせるべきではない
+      // canvas上はプレビューと割り切ってcanvasでrotateしたものと実際に保存するimageを分けるなどの対応が必要
+      if (rotation !== 0) {
+        image = image.rotate(rotation);
+
+        // 画面からはみ出さないように適当にリザイズする(レタッチとしては誤り)
+        if ((image.height * image.width) / 800 > 550) {
+          image = image.resize({
+            width: (image.width * 550) / image.height,
+            height: 550,
+            preserveAspectRatio: true,
+          });
+        } else {
+          image = image.resize({
+            width: 800,
+            height: (image.height * 800) / image.width,
+            preserveAspectRatio: false,
+          });
+        }
+      }
+
+      canvasRef.current
+        ?.getContext("2d")
+        ?.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+      canvasRef.current
+        ?.getContext("2d")
+        ?.drawImage(
+          image.getCanvas(),
+          (800 - image.width) / 2,
+          (550 - image.height) / 2
+        );
+    });
   }, [originalImage, rotation, toneCurve]);
 
   useEffect(() => {
