@@ -25,6 +25,13 @@ export const App = () => {
 
   const [toneCurve, setToneCurve] = useState<number[]>([]);
   const [rotation, setRotation] = useState(0);
+  const [clipArea, setClipArea] = useState({
+    x: 100,
+    y: 200,
+    width: 140,
+    height: 250,
+  });
+  console.log(clipArea);
 
   const [, startTransition] = useTransition();
   const update = useCallback(() => {
@@ -44,20 +51,21 @@ export const App = () => {
       if (rotation !== 0) {
         image = image.rotate(rotation);
 
-        // 画面からはみ出さないように適当にリザイズする(レタッチとしては誤り)
-        if ((image.height * image.width) / 800 > 550) {
-          image = image.resize({
-            width: (image.width * 550) / image.height,
-            height: 550,
-            preserveAspectRatio: true,
-          });
-        } else {
-          image = image.resize({
-            width: 800,
-            height: (image.height * 800) / image.width,
-            preserveAspectRatio: false,
-          });
-        }
+        const rotationInRadian = (rotation * Math.PI) / 180;
+        const width =
+          550 /
+          ((550 / 800) * Math.cos(rotationInRadian) +
+            Math.sin(rotationInRadian));
+        const height =
+          550 /
+          ((800 / 550) * Math.sin(rotationInRadian) +
+            Math.cos(rotationInRadian));
+        setClipArea({
+          x: (800 - width) / 2,
+          y: (550 - height) / 2,
+          width,
+          height,
+        });
       }
 
       canvasRef.current
@@ -88,14 +96,39 @@ export const App = () => {
           gap: 16px;
         `}
       >
-        <canvas
-          width={800}
-          height={550}
-          ref={canvasRef}
+        <div
           css={css`
-            background-color: black;
+            position: relative;
           `}
-        />
+        >
+          <canvas
+            width={800}
+            height={550}
+            ref={canvasRef}
+            css={css`
+              background-color: black;
+            `}
+          />
+          <svg
+            css={css`
+              position: absolute;
+              top: 0;
+              left: 0;
+              width: 100%;
+              height: 100%;
+            `}
+          >
+            <rect
+              x={clipArea.x}
+              y={clipArea.y}
+              width={clipArea.width}
+              height={clipArea.height}
+              fill="none"
+              stroke="white"
+              strokeWidth={2}
+            />
+          </svg>
+        </div>
         <div
           css={css`
             display: grid;
