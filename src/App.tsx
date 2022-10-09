@@ -31,10 +31,30 @@ export const App = () => {
       return;
     }
 
-    const newImage = convertImage(
+    let image = originalImage.clone();
+    image = convertImage(
       originalImage,
       (v) => toneCurve[Math.floor((v * 100) / 256)] * 256
-    ).rotate(rotation);
+    );
+
+    if (rotation !== 0) {
+      image = image.rotate(rotation);
+
+      // 画面からはみ出さないように適当にリザイズする(レタッチとしては誤り)
+      if ((image.height * image.width) / 800 > 550) {
+        image = image.resize({
+          width: (image.width * 550) / image.height,
+          height: 550,
+          preserveAspectRatio: true,
+        });
+      } else {
+        image = image.resize({
+          width: 800,
+          height: (image.height * 800) / image.width,
+          preserveAspectRatio: false,
+        });
+      }
+    }
 
     canvasRef.current
       ?.getContext("2d")
@@ -42,9 +62,9 @@ export const App = () => {
     canvasRef.current
       ?.getContext("2d")
       ?.drawImage(
-        newImage.getCanvas(),
-        (800 - newImage.width) / 2,
-        (550 - newImage.height) / 2
+        image.getCanvas(),
+        (800 - image.width) / 2,
+        (550 - image.height) / 2
       );
   }, [originalImage, rotation, toneCurve]);
 
