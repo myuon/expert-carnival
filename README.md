@@ -1,10 +1,5 @@
-# react-vite-template
+# @myuon/react-photo-edit
 
-Installed:
-
-- [x] Vite
-- [x] React
-- [x] TypeScript
-- [x] ESLint
-- [x] Prettier
-- [x] emotion
+```
+npm i @myuon/rect-photo-edit @emotion/react
+```
