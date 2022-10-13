@@ -1,5 +1,5 @@
 {
-  "name": "vite-project",
+  "name": "@myuon/react-photo-edit",
   "version": "0.1.0",
   "license": "MIT",
   "homepage": "https://github.com/myuon/react-photo-edit",
@@ -21,7 +21,8 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "eslint . --fix",
-    "postformat": "prettier --write ."
+    "postformat": "prettier --write .",
+    "prepublishOnly": "yarn build"
   },
   "dependencies": {
     "@emotion/react": "^11.10.4",
