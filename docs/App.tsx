@@ -20,9 +20,11 @@ const useFetchImage = (url: string) => {
 const PreviewCanvas = ({
   image,
   rotationAngle,
+  onChangeRotationAngle,
 }: {
   image?: Image;
   rotationAngle?: number;
+  onChangeRotationAngle?: (angle: number) => void;
 }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const imageCanvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -48,6 +50,7 @@ const PreviewCanvas = ({
     if (canvasRef.current) {
       const ctx = canvasRef.current.getContext("2d");
       if (ctx) {
+        ctx.save();
         ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
         if (rotationAngle !== undefined) {
           ctx.translate(
@@ -67,18 +70,75 @@ const PreviewCanvas = ({
             (550 - imageCanvasRef.current.height) / 2
           );
         }
+        ctx.restore();
       }
     }
   }, [image, rotationAngle]);
+
+  const [dragState, setDragState] = useState<{
+    x: number;
+    y: number;
+    rotation: number;
+  } | null>(null);
 
   return (
     <canvas
       width={800}
       height={550}
       ref={canvasRef}
-      css={css`
-        background-color: black;
-      `}
+      css={[
+        css`
+          background-color: black;
+        `,
+        {
+          cursor: dragState ? "grabbing" : "grab",
+        },
+      ]}
+      onMouseDown={(event) => {
+        if (!canvasRef.current || rotationAngle === undefined) {
+          return;
+        }
+        const rect = canvasRef.current.getBoundingClientRect();
+
+        setDragState({
+          x: event.clientX - rect.left,
+          y: event.clientY - rect.top,
+          rotation: rotationAngle,
+        });
+      }}
+      onMouseMove={(event) => {
+        if (rotationAngle === undefined || !canvasRef.current) {
+          return;
+        }
+
+        const rect = canvasRef.current.getBoundingClientRect();
+
+        if (dragState) {
+          const origin = [
+            canvasRef.current.width / 2,
+            canvasRef.current.height / 2,
+          ];
+          const before = [dragState.x - origin[0], dragState.y - origin[1]];
+          const after = [
+            event.clientX - rect.left - origin[0],
+            event.clientY - rect.top - origin[1],
+          ];
+
+          const angle =
+            Math.atan2(
+              before[0] * after[1] - before[1] * after[0],
+              before[0] * after[0] + before[1] * after[1]
+            ) *
+            (180 / Math.PI);
+          onChangeRotationAngle?.(dragState.rotation + angle);
+        }
+      }}
+      onMouseUp={() => {
+        setDragState(null);
+      }}
+      onMouseLeave={() => {
+        setDragState(null);
+      }}
     />
   );
 };
@@ -117,6 +177,7 @@ export const App = () => {
                 : undefined
             }
             rotationAngle={rotation}
+            onChangeRotationAngle={setRotation}
           />
           <section
             css={css`
@@ -151,13 +212,13 @@ export const App = () => {
                 font-weight: 600;
               `}
             >
-              rotation
+              rotation ({rotation.toFixed(2)})
             </span>
             <input
               type="range"
               min={-180}
               max={180}
-              defaultValue={0}
+              value={rotation}
               onChange={(event) => {
                 const rotation = Number(event.target.value);
                 setRotation(rotation);
