@@ -1,5 +1,5 @@
 import { css } from "@emotion/react";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { clamp } from "../helper/clamp";
 import { curve } from "../helper/curve";
 
@@ -15,12 +15,19 @@ export const Histogram = ({
     { id: "start", x: 0, y: 0 },
     { id: "end", x: 1, y: 1 },
   ]);
+  const onChangeToneCurveMemoized = useCallback(
+    (points: number[]) => {
+      onChangeToneCurve?.(points);
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  );
   const toneCurvePoints = useMemo(() => {
     const newPoints = curve(points);
-    onChangeToneCurve?.(newPoints);
+    onChangeToneCurveMemoized?.(newPoints);
 
     return newPoints;
-  }, [points]);
+  }, [onChangeToneCurveMemoized, points]);
 
   return (
     <svg

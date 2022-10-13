@@ -2,8 +2,8 @@ import "./App.css";
 import { Image } from "image-js";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { css } from "@emotion/react";
-import { Histogram } from "./Histogram";
-import { convertImage } from "./helper/image";
+import { convertImage } from "../src/helper/image";
+import { Histogram } from "../src/Histogram";
 
 const useFetchImage = (url: string) => {
   const [image, setImage] = useState<Image>();
