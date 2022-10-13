@@ -1,11 +1,16 @@
 {
   "name": "vite-project",
-  "private": true,
-  "version": "0.0.0",
-  "type": "module",
+  "version": "0.1.0",
+  "license": "MIT",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "prebuild": "rm -rf ./dist",
+    "build": "yarn typecheck && yarn build:tsc",
+    "build:tsc": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "eslint . --fix",
