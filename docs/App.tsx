@@ -17,6 +17,72 @@ const useFetchImage = (url: string) => {
   return { image, histogram: image?.getHistogram({ channel: 0 }) };
 };
 
+const PreviewCanvas = ({
+  image,
+  rotationAngle,
+}: {
+  image?: Image;
+  rotationAngle?: number;
+}) => {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const imageCanvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  if (canvasRef.current && !imageCanvasRef.current) {
+    imageCanvasRef.current = document.createElement("canvas");
+    imageCanvasRef.current.width = canvasRef.current.width;
+    imageCanvasRef.current.height = canvasRef.current.height;
+  }
+
+  useEffect(() => {
+    const ctx = imageCanvasRef.current?.getContext("2d");
+    if (ctx && image) {
+      ctx.drawImage(
+        image.getCanvas(),
+        (800 - image.width) / 2,
+        (550 - image.height) / 2
+      );
+    }
+  }, [image]);
+
+  useEffect(() => {
+    if (canvasRef.current) {
+      const ctx = canvasRef.current.getContext("2d");
+      if (ctx) {
+        ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+        if (rotationAngle !== undefined) {
+          ctx.translate(
+            canvasRef.current.width / 2,
+            canvasRef.current.height / 2
+          );
+          ctx.rotate((rotationAngle * Math.PI) / 180);
+          ctx.translate(
+            -canvasRef.current.width / 2,
+            -canvasRef.current.height / 2
+          );
+        }
+        if (imageCanvasRef.current) {
+          ctx.drawImage(
+            imageCanvasRef.current,
+            (800 - imageCanvasRef.current.width) / 2,
+            (550 - imageCanvasRef.current.height) / 2
+          );
+        }
+      }
+    }
+  }, [image, rotationAngle]);
+
+  return (
+    <canvas
+      width={800}
+      height={550}
+      ref={canvasRef}
+      css={css`
+        background-color: black;
+      `}
+    />
+  );
+};
+
 export const App = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const { image: originalImage, histogram } = useFetchImage(
@@ -31,7 +97,6 @@ export const App = () => {
     width: 140,
     height: 250,
   });
-  console.log(clipArea);
 
   const [, startTransition] = useTransition();
   const update = useCallback(() => {
@@ -99,6 +164,7 @@ export const App = () => {
         <div
           css={css`
             position: relative;
+            display: none;
           `}
         >
           <canvas
@@ -136,6 +202,7 @@ export const App = () => {
             align-self: flex-start;
           `}
         >
+          <PreviewCanvas image={originalImage} rotationAngle={rotation} />
           <section
             css={css`
               display: grid;
