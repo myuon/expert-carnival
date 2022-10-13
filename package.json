@@ -2,9 +2,16 @@
   "name": "vite-project",
   "version": "0.1.0",
   "license": "MIT",
+  "homepage": "https://github.com/myuon/react-photo-edit",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/myuon/react-photo-edit.git"
+  },
   "files": [
     "dist"
   ],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "scripts": {
     "dev": "vite",
     "prebuild": "rm -rf ./dist",
