@@ -1,6 +1,6 @@
 import "./App.css";
 import { Image } from "image-js";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { css } from "@emotion/react";
 import { convertImage } from "../src/helper/image";
 import { Histogram } from "../src/Histogram";
@@ -150,6 +150,17 @@ export const App = () => {
 
   const [toneCurve, setToneCurve] = useState<number[]>([]);
   const [rotation, setRotation] = useState(0);
+  const [hsv, setHsv] = useState({ h: 0, s: 0, v: 0 });
+
+  const image = useMemo(
+    () =>
+      originalImage
+        ? convertImage(originalImage, (vs) =>
+            vs.map((v) => toneCurve[Math.floor((v * 100) / 256)] * 256)
+          )
+        : undefined,
+    [originalImage, toneCurve]
+  );
 
   return (
     <div className="App">
@@ -168,17 +179,18 @@ export const App = () => {
           `}
         >
           <PreviewCanvas
-            image={
-              originalImage
-                ? convertImage(
-                    originalImage,
-                    (v) => toneCurve[Math.floor((v * 100) / 256)] * 256
-                  )
-                : undefined
-            }
+            image={image}
             rotationAngle={rotation}
             onChangeRotationAngle={setRotation}
           />
+        </div>
+        <div
+          css={css`
+            display: grid;
+            gap: 16px;
+            align-self: flex-start;
+          `}
+        >
           <section
             css={css`
               display: grid;
@@ -222,6 +234,31 @@ export const App = () => {
               onChange={(event) => {
                 const rotation = Number(event.target.value);
                 setRotation(rotation);
+              }}
+            />
+          </section>
+          <section
+            css={css`
+              display: grid;
+              gap: 8px;
+              align-self: flex-start;
+            `}
+          >
+            <span
+              css={css`
+                font-weight: 600;
+              `}
+            >
+              HSV
+            </span>
+            <input
+              type="range"
+              min={0}
+              max={360}
+              value={hsv.h}
+              onChange={(event) => {
+                const value = Number(event.target.value);
+                setHsv((hsv) => ({ ...hsv, h: value }));
               }}
             />
           </section>
